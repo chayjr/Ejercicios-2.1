@@ -10,92 +10,101 @@ Original file is located at
 #           Autor:
 #   David Osvaldo Chay May
 #   may876518@gmail.com
-#   Version 1.0 : 11/02/2025
-#
-import numpy as np  #Se importa la libreria numpy para hacer calculos numericos
-import matplotlib.pyplot as plt  # Se importa matplotlib para graficar.
+#   Versión 1.0 : 13/02/2025
 
-# Definir la función que queremos encontrar la raíz.
+
+
+import numpy as np  # Importamos la librería NumPy para manejar cálculos numéricos
+import matplotlib.pyplot as plt  # Importamos Matplotlib para graficar
+
+# Definir la función cuya raíz queremos encontrar
 def f(x):
-    return x**3 - 4*x - 9  # Es una función cúbica, queremos encontrar un valor de x donde f(x) = 0.
+    return x**3 - 4*x - 9  # Función f(x) = x³ - 4x - 9
 
-# Algoritmo del Método de Bisección
-def biseccion(a, b, tol=1e-3, max_iter=100): #Validamos que el metodo de bisección sea aplicable
-    if f(a) * f(b) >= 0:  # La función debe cambiar de signo en el intervalo (f(a) * f(b) < 0)
+# Implementación del Método de Bisección
+def biseccion(a, b, tol=1e-5, max_iter=100):
+    # Verificamos que haya un cambio de signo en el intervalo [a, b]
+    if f(a) * f(b) >= 0:
         print("El método de bisección no es aplicable en el intervalo dado.")
-        return None
+        return None  # Retorna None si el método no se puede aplicar
 
-    # Listas para almacenar los valores de cada iteración
+    # Listas para almacenar las iteraciones y los errores
     iteraciones = []
-    errores_abs = []  # Se guarda el erro absoluto
-    errores_rel = []  #Se guarda el error relativo
-    errores_cuad = []  # Se guarda el error cuadrático
-    c_old = a  # Inicializamos c_old con el valor de a para calcular errores en la primera iteración
+    errores_abs = []  # Error absoluto
+    errores_rel = []  # Error relativo
+    errores_cua = []  # Error cuadrático
 
-    # Mostramos el encabezado de la tabla
+    c_old = a  # Valor previo de c para calcular errores
+
+    # Encabezado para mostrar las iteraciones en la consola
     print("\nIteraciones del Método de Bisección:")
-    print("Iter |       a       |       b       |       c       |      f(c)      |     Error Abs     |   Error Rel   |  Error Cuadrático  ")
-    print("-" * 110)
+    print("Iter |       a       |       b       |       c       |      f(c)      |     Error Absoluto  | Error Relativo  | Error Cuadrático    ")
+    print("-" * 85)
 
-    # Iteramos hasta el máximo de iteraciones o hasta que se cumpla la tolerancia
+    # Iteramos hasta el número máximo de iteraciones
     for i in range(max_iter):
-        c = (a + b) / 2 #Se calcula el punto medio del intervalo
-        iteraciones.append(c)  # Se guarda la iteración
+        c = (a + b) / 2  # Punto medio del intervalo
+        iteraciones.append(c)  # Guardamos la iteración actual
 
-        # Calculamos los errores
+        # Cálculo de errores
         error_abs = abs(c - c_old)  # Error absoluto
-        error_rel = abs((c - c_old) / c) if c != 0 else 0  # Error relativo (evitamos división por 0)
-        error_cuad = error_abs**2  # Error cuadrático
+        error_rel = error_abs / c  # Error relativo
+        error_cua = error_abs**2  # Error cuadrático
         errores_abs.append(error_abs)
         errores_rel.append(error_rel)
-        errores_cuad.append(error_cuad)
+        errores_cua.append(error_cua)
 
-        # Imprimimos la iteración actual con los valores calculados
-        print(f"{i+1:4d} | {a:.8f} | {b:.8f} | {c:.8f} | {f(c):.8f} | {error_abs:.8e} | {error_rel:.8e} | {error_cuad:.8e}")
+        # Imprimimos los valores de la iteración actual
+        print(f"{i+1:4d} | {a:.8f} | {b:.8f} | {c:.8f} | {f(c):.8f} | {error_abs:.8e} | {error_rel:.8e} | {error_cua:.8e}")
 
-        # Condición de parada: si f(c) es suficientemente pequeño o el error absoluto es menor que la tolerancia
+        # Verificamos si el método ha convergido (f(c) cercano a 0 o error absoluto menor que la tolerancia)
         if abs(f(c)) < tol or error_abs < tol:
-            break
+            break  # Terminamos la iteración
 
-        # Decidimos en qué subintervalo continuar
+        # Determinamos el nuevo intervalo [a, b] basado en el signo de f(c)
         if f(a) * f(c) < 0:
             b = c  # La raíz está en el intervalo [a, c]
         else:
             a = c  # La raíz está en el intervalo [c, b]
 
-        c_old = c  # Guardamos el valor de c para calcular errores en la siguiente iteración
+        c_old = c  # Actualizamos el valor de c para el siguiente cálculo de error
 
-    return iteraciones, errores_abs, errores_rel, errores_cuad  # Retornamos los valores obtenidos
+    return iteraciones, errores_abs, errores_rel, errores_cua  # Retornamos los valores obtenidos
 
-# Parámetros iniciales del intervalo donde buscamos la raíz
-a, b = 2, 3
-iteraciones, errores_abs, errores_rel, errores_cuad = biseccion(a, b)
+# Parámetros iniciales del intervalo
+a, b = 2, 3  # Definimos el intervalo donde buscamos la raíz
 
-# Graficamos la convergencia del método de bisección
-x = np.linspace(a - 1, b + 1, 400)  # Creamos valores de x para la gráfica
-y = f(x)  # Evaluamos f(x) para cada x
-fig, ax1 = plt.subplots(figsize=(8, 6))  # Creamos la figura y los ejes
-ax1.plot(x, y, label=r'$f(x) = x^3 - 4x - 9$', color='b')  # Se graficamos la función
-ax1.axhline(0, color='k', linestyle='--', linewidth=1)  # Línea horizontal en y=0 para referencia
-ax1.scatter(iteraciones, [f(c) for c in iteraciones], color='red', label='Iteraciones')  # Marcamos las iteraciones en la gráfica
-ax1.set_xlabel('x')  # Etiqueta del eje x
-ax1.set_ylabel('f(x)')  # Etiqueta del eje y
-ax1.set_title("Convergencia del Método de Bisección")  # Título del gráfico
-ax1.legend()
-ax1.grid()  # Activamos la cuadrícula
-plt.savefig("convergencia_biseccion.png", dpi=300)  # Guardamos la imagen en un archivo
-plt.show()  # Mostramos la gráfica
+# Llamamos al método de bisección
+iteraciones, errores_abs, errores_rel, errores_cua = biseccion(a, b)
 
-# Graficamos los errores (absoluto, relativo y cuadrático)
-fig, ax2 = plt.subplots(figsize=(8, 6))  # Creamos la figura
-ax2.plot(range(1, len(errores_abs)+1), errores_abs, marker='o', linestyle='-', color='r', label="Error Absoluto")  # Graficamos error absoluto
-ax2.plot(range(1, len(errores_rel)+1), errores_rel, marker='s', linestyle='-', color='g', label="Error Relativo")  # Graficamos error relativo
-ax2.plot(range(1, len(errores_cuad)+1), errores_cuad, marker='^', linestyle='-', color='b', label="Error Cuadrático")  # Graficamos error cuadrático
-ax2.set_yscale("log")  # Usamos escala logarítmica para visualizar mejor los errores
-ax2.set_xlabel("Iteración")  # Etiqueta del eje x
-ax2.set_ylabel("Error")  # Etiqueta del eje y
-ax2.set_title("Errores Absoluto, Relativo y Cuadrático en cada Iteración")  # Título de la gráfica
-ax2.legend()  # Mostramos la leyenda
-ax2.grid()  # Activamos la cuadrícula
-plt.savefig("errores_biseccion.png", dpi=300)  # Guardamos la imagen de los errores
+# Crear la figura para graficar
+fig, ax = plt.subplots(1, 2, figsize=(14, 5))
+
+# Definir los valores para graficar la función
+x = np.linspace(a - 1, b + 1, 400)  # Valores entre a-1 y b+1 con 400 puntos
+y = f(x)  # Evaluamos la función en los puntos x
+
+# Gráfica de la función y la convergencia de iteraciones
+ax[0].plot(x, y, label=r'$f(x) =x^3-4x-9$', color='b')  # Graficamos f(x)
+ax[0].axhline(0, color='k', linestyle='--', linewidth=1)  # Línea horizontal en y=0
+ax[0].scatter(iteraciones, [f(c) for c in iteraciones], color='red', label='Iteraciones')  # Puntos de iteraciones en rojo
+ax[0].set_xlabel('x')  # Etiqueta del eje x
+ax[0].set_ylabel('f(x)')  # Etiqueta del eje y
+ax[0].set_title("Convergencia del Método de Bisección")  # Título de la gráfica
+ax[0].legend()  # Agregamos la leyenda
+ax[0].grid()  # Mostramos la cuadrícula
+
+# Gráfica de convergencia del error
+ax[1].plot(range(1, len(errores_abs)+1), errores_abs, marker='o', linestyle='-', label="Error Absoluto", color='r')  # Error absoluto
+ax[1].plot(range(1, len(errores_rel)+1), errores_rel, marker='s', linestyle='-', label="Error Relativo", color='b')  # Error relativo
+ax[1].plot(range(1, len(errores_cua)+1), errores_cua, marker='^', linestyle='-', label="Error Cuadrático", color='g')  # Error cuadrático
+ax[1].set_yscale("log")  # Usamos escala logarítmica para visualizar los errores mejor
+ax[1].set_xlabel("Iteración")  # Etiqueta del eje x
+ax[1].set_ylabel("Error")  # Etiqueta del eje y
+ax[1].set_title("Evolución del Error en cada Iteración")  # Título de la gráfica
+ax[1].grid()  # Mostramos la cuadrícula
+ax[1].legend()  # Agregamos la leyenda
+
+# Guardamos la figura generada en un archivo
+plt.savefig("biseccion_convergencia.png", dpi=300)  # Guardamos la imagen en formato PNG con resolución 300 dpi
 plt.show()  # Mostramos la gráfica
